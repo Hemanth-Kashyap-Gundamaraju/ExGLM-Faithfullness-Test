@@ -1,0 +1,106 @@
+
+/usr/local/lib/python3.13/dist-packages/torch/jit/_script.py:1491: FutureWarning: `torch.jit.script` is deprecated. Please switch to `torch.compile` or `torch.export`.
+  warnings.warn(
+Settings: {'model': 'qwen2.5:1.5b', 'temperature': 0.0, 'hops': 2, 'max_neighbors': 10, 'prompt_style': 'A', 'num_test_nodes': 542, 'seed': 42, 'run_tag': 'run1'}
+Evaluating 542 test nodes...
+  25/542 nodes done
+  50/542 nodes done
+  75/542 nodes done
+  100/542 nodes done
+  125/542 nodes done
+  150/542 nodes done
+  175/542 nodes done
+  200/542 nodes done
+  225/542 nodes done
+  250/542 nodes done
+  275/542 nodes done
+  300/542 nodes done
+  325/542 nodes done
+  350/542 nodes done
+  375/542 nodes done
+  400/542 nodes done
+  425/542 nodes done
+  450/542 nodes done
+  475/542 nodes done
+  500/542 nodes done
+  525/542 nodes done
+  542/542 nodes done
+
+Nodes used: 502   skipped: 40   accuracy: 39.6%
+Nodes citing >=1 shown neighbor: 369 (73.5%); mean cited per citer: 3.71
+Mean citation hallucination rate: 1.1% (nodes with a quoted title that matches no shown neighbor: 13)
+Explanation disagrees with own label: 3
+Nodes whose neighbor list was capped: 325
+
+=== ALL ===
+cited_removal        n= 487 flip= 11.5% prob_drop=  0.010
+random_removal       n= 494 flip=  5.9% prob_drop=  0.008
+uncited_removal      n= 482 flip= 16.0% prob_drop=  0.010  sufficiency=84.0%
+total_graph_removal  n= 482 flip= 31.3% prob_drop=  0.003
+no_change            n= 494 flip=  3.0% prob_drop=  0.005
+
+=== CORRECT ===
+cited_removal        n= 193 flip=  7.8% prob_drop= -0.003
+random_removal       n= 196 flip=  5.1% prob_drop=  0.009
+uncited_removal      n= 194 flip=  4.1% prob_drop= -0.035  sufficiency=95.9%
+total_graph_removal  n= 193 flip= 10.4% prob_drop= -0.076
+no_change            n= 196 flip=  1.0% prob_drop=  0.001
+
+=== INCORRECT ===
+cited_removal        n= 294 flip= 13.9% prob_drop=  0.020
+random_removal       n= 298 flip=  6.4% prob_drop=  0.008
+uncited_removal      n= 288 flip= 24.0% prob_drop=  0.041  sufficiency=76.0%
+total_graph_removal  n= 289 flip= 45.3% prob_drop=  0.056
+no_change            n= 298 flip=  4.4% prob_drop=  0.008
+
+=== CITERS ===
+cited_removal        n= 354 flip= 15.3% prob_drop=  0.009
+random_removal       n= 361 flip=  7.5% prob_drop=  0.006
+uncited_removal      n= 352 flip=  8.5% prob_drop=  0.003  sufficiency=91.5%
+total_graph_removal  n= 352 flip= 29.5% prob_drop= -0.008
+no_change            n= 363 flip=  3.6% prob_drop=  0.002
+
+Saved: results/main_all542.json
+
+=== Running: base ===
+/usr/local/lib/python3.13/dist-packages/torch/jit/_script.py:1491: FutureWarning: `torch.jit.script` is deprecated. Please switch to `torch.compile` or `torch.export`.
+  warnings.warn(
+
+=== Running: prompt_style-B ===
+/usr/local/lib/python3.13/dist-packages/torch/jit/_script.py:1491: FutureWarning: `torch.jit.script` is deprecated. Please switch to `torch.compile` or `torch.export`.
+  warnings.warn(
+
+=== Running: temperature-0p7 ===
+/usr/local/lib/python3.13/dist-packages/torch/jit/_script.py:1491: FutureWarning: `torch.jit.script` is deprecated. Please switch to `torch.compile` or `torch.export`.
+  warnings.warn(
+
+=== Running: temperature-0p7_run_tag-run2 ===
+/usr/local/lib/python3.13/dist-packages/torch/jit/_script.py:1491: FutureWarning: `torch.jit.script` is deprecated. Please switch to `torch.compile` or `torch.export`.
+  warnings.warn(
+
+=== Running: hops-1 ===
+/usr/local/lib/python3.13/dist-packages/torch/jit/_script.py:1491: FutureWarning: `torch.jit.script` is deprecated. Please switch to `torch.compile` or `torch.export`.
+  warnings.warn(
+
+=== Running: max_neighbors-5 ===
+/usr/local/lib/python3.13/dist-packages/torch/jit/_script.py:1491: FutureWarning: `torch.jit.script` is deprecated. Please switch to `torch.compile` or `torch.export`.
+  warnings.warn(
+
+=== Running: max_neighbors-20 ===
+/usr/local/lib/python3.13/dist-packages/torch/jit/_script.py:1491: FutureWarning: `torch.jit.script` is deprecated. Please switch to `torch.compile` or `torch.export`.
+  warnings.warn(
+
+=== Running: ollama_model-qwen2p57b ===
+/usr/local/lib/python3.13/dist-packages/torch/jit/_script.py:1491: FutureWarning: `torch.jit.script` is deprecated. Please switch to `torch.compile` or `torch.export`.
+  warnings.warn(
+| run | model | T | hops | maxnb | style | used | citers% | halluc% | flip_cited | flip_random | flip_control | sufficiency | flip_total |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| base | qwen2.5:1.5b | 0.0 | 2 | 10 | A | 187 | 73.3 | 1.4 | 18.8 | 9.0 | 3.0 | 92.1 | 32.6 |
+| hops-1 | qwen2.5:1.5b | 0.0 | 1 | 10 | A | 182 | 85.7 | 1.4 | 22.6 | 6.6 | 4.6 | 92.1 | 28.0 |
+| main_all542 | qwen2.5:1.5b | 0.0 | 2 | 10 | A | 502 | 73.5 | 1.1 | 15.3 | 7.5 | 3.6 | 91.5 | 31.3 |
+| max_neighbors-20 | qwen2.5:1.5b | 0.0 | 2 | 20 | A | 190 | 67.9 | 1.5 | 12.7 | 7.8 | 4.8 | 87.8 | 32.2 |
+| max_neighbors-5 | qwen2.5:1.5b | 0.0 | 2 | 5 | A | 191 | 78.5 | 1.8 | 22.5 | 11.6 | 6.1 | 89.7 | 33.0 |
+| ollama_model-qwen2p57b | qwen2.5:7b | 0.0 | 2 | 10 | A | 186 | 96.2 | 0.6 | 14.3 | 3.4 | 0.6 | 95.5 | 23.6 |
+| prompt_style-B | qwen2.5:1.5b | 0.0 | 2 | 10 | B | 199 | 99.0 | 1.2 | 16.9 | 5.6 | 1.5 | 93.9 | 20.0 |
+| temperature-0p7 | qwen2.5:1.5b | 0.7 | 2 | 10 | A | 191 | 63.9 | 1.1 | 40.5 | 26.5 | 50.0 | 69.2 | 41.8 |
+| temperature-0p7_run_tag-run2 | qwen2.5:1.5b | 0.7 | 2 | 10 | A | 190 | 69.5 | 2.9 | 31.7 | 29.1 | 53.8 | 67.5 | 46.2 |

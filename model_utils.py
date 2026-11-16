@@ -1,49 +1,74 @@
-import torch
-import numpy as np
-from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+import json
+import re
+import requests
+from config import *
 
-def load_quantized_model(model_name="Qwen/Qwen2.5-1.5B-Instruct"):
-    """Loads a 4-bit quantized open-weight model for single-GPU inference."""
-    quantization_config = BitsAndBytesConfig(
-        load_in_4bit=True,
-        bnb_4bit_compute_dtype=torch.float16,
-        bnb_4bit_quant_type="nf4"
+
+def _headers():
+    h = {"Content-Type": "application/json"}
+    if OLLAMA_API_KEY:
+        h["Authorization"] = f"Bearer {OLLAMA_API_KEY}"
+    return h
+
+
+def _short(text, n=SNIPPET_CHARS):
+    return text.replace("\n", " ")[:n]
+
+
+def format_neighbors(neighbor_ids, texts):
+    if not neighbor_ids:
+        return "(no neighbors given)"
+    return "\n".join(f"[Node {n}] {_short(texts[n])}" for n in neighbor_ids)
+
+
+def construct_prompt(node_id, texts, neighbor_ids):
+    return f"""You classify research papers into one of: {", ".join(CLASS_NAMES)}.
+
+Target paper [Node {node_id}]:
+{_short(texts[node_id], 600)}
+
+Neighbor papers (cited by or citing the target):
+{format_neighbors(neighbor_ids, texts)}
+
+Reply ONLY with JSON in this format:
+{{"label": "<one class>",
+  "scores": {{"<class>": <probability>, ...for all classes, sum to 1}},
+  "explanation": "<reasoning; cite neighbors like 'Node 123' if they influenced you>"}}"""
+
+
+def call_ollama(prompt):
+    body = {
+        "model": OLLAMA_MODEL,
+        "stream": False,
+        "format": "json",
+        "messages": [{"role": "user", "content": prompt}],
+        "options": {"temperature": TEMPERATURE, "seed": SEED},
+    }
+    r = requests.post(
+        OLLAMA_URL, headers=_headers(), json=body, timeout=REQUEST_TIMEOUT
     )
-    
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
-    model = AutoModelForCausalLM.from_pretrained(
-        model_name,
-        quantization_config=quantization_config,
-        device_map="auto"
-    )
-    return model, tokenizer
+    r.raise_for_status()
+    return r.json()["message"]["content"]
 
-def construct_prompt(node_id, text_features, neighborhood_ids):
-    """Constructs the ExGLM-style prompt for the LLM."""
-    neighborhood_str = ", ".join([f"Node {n}" for n in neighborhood_ids])
-    
-    prompt = f"""You are a Graph-Language Model classifying research papers.
-Target Node: Node {node_id}
-Target Node Features: {text_features}
 
-Graph Context (Neighbors): {neighborhood_str}
+def parse_response(raw):
+    """Returns (label, scores, explanation). Bad output -> (None, {}, '')."""
+    try:
+        d = json.loads(raw)
+        label = d.get("label")
+        if label not in CLASS_NAMES:
+            label = None
+        return label, d.get("scores", {}), str(d.get("explanation", ""))
+    except json.JSONDecodeError:
+        return None, {}, ""
 
-Task: Predict the category of the Target Node and provide a natural language explanation explicitly citing the neighbors that influenced your decision.
-Format:
-Label: [Category]
-Explanation: [Your reasoning citing specific nodes, e.g., 'Node X']"""
-    return prompt
 
-def run_inference(prompt, model, tokenizer):
-    """Runs the prompt through the model and extracts the response."""
-    inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
-    
-    with torch.no_grad():
-        outputs = model.generate(**inputs, max_new_tokens=150, temperature=0.0)
-    
-    response = tokenizer.decode(outputs[0], skip_special_tokens=True)
-    
-    # Placeholder for actual logprob extraction of the predicted class token
-    simulated_prob = np.random.uniform(0.7, 0.99) 
-    
-    return response, simulated_prob
+def get_label_prob(scores, label):
+    try:
+        return float(scores.get(label, 0.0))
+    except (TypeError, ValueError):
+        return 0.0
+
+
+def run_inference(prompt):
+    return parse_response(call_ollama(prompt))

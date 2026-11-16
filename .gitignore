@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+cora_data/
+cache/
+.env
+*.key
+*:Zone.Identifier

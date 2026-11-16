@@ -1,37 +1,53 @@
-import re
+"""
+interventions.py - ONE job: change the neighbor list for each test (pure logic).
+"""
 import random
 
-def extract_cited_neighbors(explanation):
-    """Parses the generated explanation to find explicitly cited node IDs."""
-    matches = re.findall(r"Node\s(\d+)", explanation, re.IGNORECASE)
-    return list(set([int(m) for m in matches]))
+from config import CONTROL_STRATEGY, SEED
 
-def check_hallucinations(cited_nodes, actual_neighborhood):
-    """Calculates the percentage of cited nodes missing from the true neighborhood."""
-    hallucinated = [n for n in cited_nodes if n not in actual_neighborhood]
-    return len(hallucinated) / len(cited_nodes) if cited_nodes else 0.0
 
-def apply_intervention(neighborhood, cited_nodes, strategy):
-    """Modifies the target node's neighborhood based on the ablation strategy."""
-    neighborhood_set = set(neighborhood)
-    cited_set = set(cited_nodes).intersection(neighborhood_set)
-    
+def remove_nodes(neighborhood, to_remove):
+    """Description: neighborhood without the nodes in to_remove (order kept).
+    Inputs: neighborhood (list), to_remove (iterable). Outputs: list.
+    Dependencies: none. Utilities: apply_intervention()."""
+    banned = set(to_remove)
+    return [n for n in neighborhood if n not in banned]
+
+
+def pick_random_uncited(neighborhood, valid_cited, node_id):
+    """
+    Description: k random neighbors that were NOT cited, k = number of cited ones.
+        Fixed seed (SEED + node_id), so the same nodes are picked in every run.
+    Inputs: neighborhood, valid_cited, node_id. Reads global SEED.
+    Outputs: list of node ids.
+    Dependencies: random.Random. Utilities: apply_intervention().
+    """
+    pool = [n for n in neighborhood if n not in set(valid_cited)]
+    k = min(len(valid_cited), len(pool))
+    return random.Random(SEED + node_id).sample(pool, k)
+
+
+def apply_intervention(neighborhood, valid_cited, strategy, node_id):
+    """
+    Description: The neighbor list after one intervention.
+        cited_removal        : remove the cited neighbors
+        random_removal       : remove the same number of random UNcited neighbors (main baseline)
+        uncited_removal      : keep ONLY the cited neighbors (sufficiency test)
+        total_graph_removal  : remove all neighbors (text-only baseline)
+        no_change            : control, nothing removed
+    Inputs: neighborhood (shown ids), valid_cited, strategy (str), node_id. Reads CONTROL_STRATEGY.
+    Outputs: list of node ids.
+    Dependencies: remove_nodes(), pick_random_uncited().
+    Utilities: main.py.
+    """
     if strategy == "cited_removal":
-        return list(neighborhood_set - cited_set)
-    
-    elif strategy == "random_removal":
-        k = len(cited_set)
-        uncited_nodes = list(neighborhood_set - cited_set)
-        if len(uncited_nodes) >= k:
-            to_remove = random.sample(uncited_nodes, k)
-        else:
-            to_remove = uncited_nodes
-        return list(neighborhood_set - set(to_remove))
-        
-    elif strategy == "uncited_removal":
-        return list(cited_set) # Sufficiency test
-        
-    elif strategy == "total_graph_removal":
+        return remove_nodes(neighborhood, valid_cited)
+    if strategy == "random_removal":
+        return remove_nodes(neighborhood, pick_random_uncited(neighborhood, valid_cited, node_id))
+    if strategy == "uncited_removal":
+        return [n for n in neighborhood if n in set(valid_cited)]
+    if strategy == "total_graph_removal":
         return []
-        
-    return neighborhood
+    if strategy == CONTROL_STRATEGY:
+        return list(neighborhood)
+    raise ValueError(f"Unknown strategy: {strategy}")
